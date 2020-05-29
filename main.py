@@ -7,8 +7,8 @@ if __name__ == "__main__":
     model = Simulation(sim_params)
     current_cycle = 0
     cycles_to_run = sim_params.get('cycles')
-    #print(cycles_to_run)
-    #print(sim_params)
+    print(cycles_to_run)
+    print(sim_params)
     while 1:
         model.step()
         if cycles_to_run > 0 and current_cycle >= cycles_to_run:
@@ -17,5 +17,5 @@ if __name__ == "__main__":
 
     model_data = model.datacollector.get_model_vars_dataframe()
     model_data.plot()
-    #print(model_data)
+    print(model_data)
     plt.show()

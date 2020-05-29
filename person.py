@@ -7,9 +7,9 @@ class Person(Agent):
         super().__init__(unique_id, model)
         self.alive = True
         self.infected = False
+        self.hospitalized = False
         self.immune = False
-        self.in_quarantine = False
-        self.in_lockdown = False
+        self.in_quarantine = False  # self quarantine
         self.time_infected = 0
 
     def move_to_next(self):
@@ -25,10 +25,6 @@ class Person(Agent):
     def set_quarantine(self):
         ''' Person has been infected and in quarantine '''
         self.in_quarantine = True
-
-    def set_lockdown(self):
-        ''' Person staying in place '''
-        self.in_lockdown = True
 
     def set_infected(self):
         ''' Person set as infected if not immune '''
@@ -47,21 +43,39 @@ class Person(Agent):
     def while_infected(self):
         ''' While infected, infect others, see if die from infection or recover '''
         self.time_infected += 1
+        if self.hospitalized:
+            # stay in bed. do nothing; maybe die
+            if self.random.random() < (
+                    self.model.critical_rate *
+                    self.model.hospital_factor
+            ):
+                self.alive = False
+                self.hospitalized = False
+                self.infected = False
+                return
+            self.hospitalized - 1
+            return
         if self.random.random() < (self.model.quarantine_rate / self.model.recovery_period):
             self.set_quarantine()
         if not self.in_quarantine:
             self.infect_others()  # infect others in same cell
         if self.time_infected < self.model.recovery_period:
-            if self.random.random() < self.model.mortality_rate:
-                self.alive = False  # person died from infection
+            if self.random.random() < self.model.critical_rate:
+                if self.model.hospital_takeup:
+                    self.hospitalized = self.model.hospital_period
+                    self.set_quarantine()
+                else:
+                    self.alive = False  # person died from infection
+                    self.infected = False
         else:  # person has passed the recovery period so no longer infected
             self.infected = False
+            self.quarantine = False
             if self.random.random() < self.model.immunity_chance:
                 self.immune = True
 
     def move(self):
         # Move to a new position if not in quarantine or staying in place
-        if self.in_quarantine or self.in_lockdown:
+        if self.in_quarantine or self.model.lockdown:
             pass
         else:
             self.move_to_next()
