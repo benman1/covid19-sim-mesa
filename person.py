@@ -47,7 +47,7 @@ class Person(Agent):
             ):
                 self.die()
                 return
-            self.hospitalized - 1
+            self.hospitalized -= 1
             return
         if self.random.random() < (
                 self.model.quarantine_rate / self.model.recovery_period
@@ -66,19 +66,20 @@ class Person(Agent):
             self.recover()
 
     def move(self):
+        # If a person is infected
+        if self.infected:
+            self.while_infected()
         # Move to a new position if not in quarantine or staying in place
         if self.quarantined or self.model.lockdown:
             pass
         else:
             self.move_to_next()
-        # If a person is infected
-        if self.infected:
-            self.while_infected()
 
     def recover(self):
         """person has passed the recovery period so no longer infected."""
         self.infected = False
         self.quarantined = False
+        self.time_infected = 0
         if self.random.random() < self.model.immunity_chance:
             self.immune = True
 

@@ -53,12 +53,7 @@ def get_hospital_takeup(model):
 @jit(nopython=False)
 def get_lockdown(model):
     """Are we in lockdown? Show big spike"""
-    return (model.lockdown > 0) * min([
-        0.5 * model.datacollector.model_vars[
-            'Active Cases'
-        ][-1],
-        0.2 * model.num_agents
-    ])
+    return (model.lockdown > 0) * 6000
 
 
 class Simulation(Model):
@@ -88,7 +83,7 @@ class Simulation(Model):
         self.hospital_takeup = True  # are hospitals at capacity?
         self.active_ratio = params.get('active_ratio')
         self.immunity_chance = params.get('immunity_chance')
-        self.quarantine_rate = params.get('quarantine_rate')
+        self.quarantine_rate = params.get('quarantine_rate') / self.recovery_period
         self.lockdown_policy = params.get('lockdown_policy')
         self.lockdown = False
         self.hospital_period = params.get('hospital_period')
