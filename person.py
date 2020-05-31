@@ -41,20 +41,15 @@ class Person(Agent):
         self.time_infected += 1
         if self.hospitalized:
             # stay in bed. do nothing; maybe die
-            if self.random.random() < (
-                    self.model.critical_rate *
-                    self.model.hospital_factor
-            ):
+            if self.random.random() < self.model.die_in_hospital_rate:
                 self.die()
                 return
             self.hospitalized -= 1
-            return
-        if self.random.random() < (
-                self.model.quarantine_rate / self.model.recovery_period
-        ):
+            if not self.hospitalized:
+                self.recover()
+                return
+        if self.random.random() < self.model.quarantine_rate:
             self.quarantined = True
-        if not self.quarantined:
-            self.infect_others()  # infect others in same cell
         if self.time_infected < self.model.recovery_period:
             if self.random.random() < self.model.critical_rate:
                 if self.model.hospital_takeup:
@@ -69,10 +64,10 @@ class Person(Agent):
         # If a person is infected
         if self.infected:
             self.while_infected()
-        # Move to a new position if not in quarantine or staying in place
-        if self.quarantined or self.model.lockdown:
-            pass
-        else:
+            # Move to a new position if not in quarantine or staying in place
+            if not (self.quarantined or self.model.lockdown):
+                self.infect_others()  # infect others in same cell
+        if not (self.quarantined or self.model.lockdown):
             self.move_to_next()
 
     def recover(self):

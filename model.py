@@ -47,13 +47,13 @@ def total_immune(model):
 @jit(nopython=False)
 def get_hospital_takeup(model):
     """are there free hospital beds? show big spike!"""
-    return model.hospital_takeup * model.num_agents
+    return model.hospital_takeup * 0.1 * model.num_agents
 
 
 @jit(nopython=False)
 def get_lockdown(model):
     """Are we in lockdown? Show big spike"""
-    return (model.lockdown > 0) * 6000
+    return (model.lockdown > 0) *  0.1 * model.num_agents
 
 
 class Simulation(Model):
@@ -87,7 +87,8 @@ class Simulation(Model):
         self.lockdown_policy = params.get('lockdown_policy')
         self.lockdown = False
         self.hospital_period = params.get('hospital_period')
-        self.hospital_factor = 0.2  # less likely to die in hospital
+        hospital_factor = params.get('hospital_factor', 0.2)  # less likely to die in hospital
+        self.die_in_hospital_rate = params.get('critical_rate') * hospital_factor / self.hospital_period
         print(f'Free beds in the hospital: {self.free_beds}')
         print(f'Population: {self.num_agents}')
 
