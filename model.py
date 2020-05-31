@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 @jit(nopython=False)
-def total_infected(model):
+def active_cases(model):
     return sum([
         1
         for agent in model.schedule.agents
@@ -62,7 +62,7 @@ def get_lockdown(model):
 
 
 class Simulation(Model):
-    """A model with some number of agents."""
+    """A model with agents."""
     def __init__(self, params, seed=None):
         #self.num_agents = params.get('num_persons')
         self.num_agents = int(
@@ -90,17 +90,19 @@ class Simulation(Model):
         self.immunity_chance = params.get('immunity_chance')
         self.quarantine_rate = params.get('quarantine_rate')
         self.lockdown_policy = params.get('lockdown_policy')
-        self.lockdown_period = params.get('lockdown_period')
         self.lockdown = False
         self.hospital_period = params.get('hospital_period')
-        self.hospital_factor = 0.5  # less likely to die in hospital
+        self.hospital_factor = 0.2  # less likely to die in hospital
         print(f'Free beds in the hospital: {self.free_beds}')
         print(f'Population: {self.num_agents}')
 
         self.running = True
         self.current_cycle = 0
+        self.create_agents()
+        self.set_reporters()
 
-        # Create agents
+    def create_agents(self):
+        """Create agents"""
         for i in range(self.num_agents):
             a = Person(i, self)
             if self.random.random() < self.start_infected:
@@ -111,9 +113,10 @@ class Simulation(Model):
             y = self.random.randrange(self.grid.height)
             self.grid.place_agent(a, (x, y))
 
+    def set_reporters(self):
         self.datacollector = DataCollector(
             model_reporters={
-                'Active Cases': total_infected,
+                'Active Cases': active_cases,
                 'Deaths': total_deaths,
                 'Immune': total_immune,
                 'Hospitalized': total_hospitalized,
@@ -132,10 +135,9 @@ class Simulation(Model):
             # count down
             self.lockdown -= 1
         else:
-            if self.lockdown_policy(
+            self.lockdown =  self.lockdown_policy(
                 self.datacollector.model_vars['Active Cases'],
                 self.datacollector.model_vars['Deaths'],
                 self.num_agents
-            ):
-                self.lockdown =  self.lockdown_period
+            )
         self.current_cycle += 1
