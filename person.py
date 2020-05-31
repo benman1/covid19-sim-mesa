@@ -2,7 +2,7 @@ from mesa import Agent
 import numpy as np
 
 class Person(Agent):
-    """ An agent with fixed initial wealth."""
+    """An agent with fixed initial health and quarantine status."""
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         self.alive = True
@@ -13,7 +13,7 @@ class Person(Agent):
         self.time_infected = 0
 
     def move_to_next(self):
-        ''' Move to next adjacent cell '''
+        """Move to next adjacent cell"""
         possible_steps = self.model.grid.get_neighborhood(
             self.pos,
             moore=True,
@@ -23,17 +23,17 @@ class Person(Agent):
         self.model.grid.move_agent(self, new_position)
 
     def set_quarantine(self):
-        ''' Person has been infected and in quarantine '''
+        """Person has been infected and in quarantine"""
         self.in_quarantine = True
 
     def set_infected(self):
-        ''' Person set as infected if not immune '''
+        """Person set as infected if not immune"""
         if not self.immune:
             self.infected = True
             self.time_infected = 0
 
     def infect_others(self):
-        ''' Infect others in same cell based on infection rate '''
+        """Infect others in same cell based on infection rate"""
         cellmates = self.model.grid.get_cell_list_contents([self.pos])
         if len(cellmates) > 1:
             for cellmate in cellmates:
@@ -41,7 +41,7 @@ class Person(Agent):
                     cellmate.set_infected()
 
     def while_infected(self):
-        ''' While infected, infect others, see if die from infection or recover '''
+        """While infected, infect others, see if die from infection or recover"""
         self.time_infected += 1
         if self.hospitalized:
             # stay in bed. do nothing; maybe die
@@ -49,6 +49,7 @@ class Person(Agent):
                     self.model.critical_rate *
                     self.model.hospital_factor
             ):
+                # die
                 self.alive = False
                 self.hospitalized = False
                 self.infected = False

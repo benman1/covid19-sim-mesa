@@ -113,16 +113,16 @@ class Simulation(Model):
 
         self.datacollector = DataCollector(
             model_reporters={
-                "Active Cases": total_infected,
-                "Deaths": total_deaths,
-                "Immune": total_immune,
-                "Hospitalized": total_hospitalized,
-                #"Hospital_capacity": get_hospital_takeup,
-                "Lockdown": get_lockdown,
+                'Active Cases': total_infected,
+                'Deaths': total_deaths,
+                'Immune': total_immune,
+                'Hospitalized': total_hospitalized,
+                #'Hospital_capacity': get_hospital_takeup,
+                'Lockdown': get_lockdown,
             })
 
     def step(self):
-        '''Advance the model by one step.'''
+        """Advance the model by one step."""
         self.datacollector.collect(self)
         self.hospital_takeup = self.datacollector.model_vars[
             'Hospitalized'
